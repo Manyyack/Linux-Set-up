@@ -18,7 +18,12 @@ then
 fi
 
 uservar=$(whoami)
-packages="vim exuberant-ctags build-essential cmake python3-dev python2.7-dev ack-grep silversearcher-ag curl"
+packages="exuberant-ctags build-essential cmake python3-dev python2-dev ack-grep silversearcher-ag curl\
+    libncurses5-dev libgtk2.0-dev libatk1.0-dev \
+    libcairo2-dev libx11-dev libxpm-dev libxt-dev python2-dev \
+    python3-dev ruby-dev lua5.2 liblua5.2-dev libperl-dev \
+    apt install build-essential cmake vim-nox python3-dev\
+    apt install mono-complete golang nodejs openjdk-17-jdk openjdk-17-jre npm"
 
 echo "Installation being carried out for user $uservar only"
 
@@ -42,6 +47,35 @@ then
     #TODO : Need to seperate depencies according to the distro.
     echo "Installing all the dependencies "
     sudo apt-get -y install $packages
+
+    #Building the Vim with Python 3.8
+    sudo apt remove vim vim-runtime gvim
+
+    git clone https://github.com/vim/vim.git
+    cd vim
+    ./configure --with-features=huge \
+        --enable-multibyte \
+        --enable-rubyinterp=yes \
+        --enable-python3interp=yes \
+        --with-python3-config-dir=$(python3-config --configdir) \
+        --enable-perlinterp=yes \
+        --enable-luainterp=yes \
+        --enable-gui=gtk2 \
+        --enable-cscope \
+        --prefix=/usr/local
+
+    make VIMRUNTIMEDIR=/usr/local/share/vim/vim91
+
+    sudo make install
+
+    sudo update-alternatives --install /usr/bin/editor editor /usr/local/bin/vim 1
+    sudo update-alternatives --set editor /usr/local/bin/vim
+    sudo update-alternatives --install /usr/bin/vi vi /usr/local/bin/vim 1
+    sudo update-alternatives --set vi /usr/local/bin/vim
+
+    cd ..
+
+
     # clone
     git clone https://github.com/powerline/fonts.git --depth=1
     # install
@@ -49,7 +83,7 @@ then
     ./install.sh
     # clean-up a bit
     cd ..
-    rm -rf fonts
+    #rm -rf fonts
 
     mkdir -p ~/.vim/autoload
 
